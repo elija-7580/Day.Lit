@@ -4,38 +4,6 @@ let resources = URL(fileURLWithPath: CommandLine.arguments.count > 1
     ? CommandLine.arguments[1]
     : FileManager.default.currentDirectoryPath + "/Resources")
 
-func pngData(from image: NSImage, pixelsWide: Int, pixelsHigh: Int) throws -> Data {
-    guard let rep = NSBitmapImageRep(
-        bitmapDataPlanes: nil,
-        pixelsWide: pixelsWide,
-        pixelsHigh: pixelsHigh,
-        bitsPerSample: 8,
-        samplesPerPixel: 4,
-        hasAlpha: true,
-        isPlanar: false,
-        colorSpaceName: .deviceRGB,
-        bytesPerRow: 0,
-        bitsPerPixel: 0
-    ) else {
-        throw NSError(domain: "DayLit", code: 1)
-    }
-    rep.size = NSSize(width: pixelsWide, height: pixelsHigh)
-    NSGraphicsContext.saveGraphicsState()
-    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-    NSGraphicsContext.current?.imageInterpolation = .high
-    image.draw(
-        in: NSRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh),
-        from: .zero,
-        operation: .copy,
-        fraction: 1.0
-    )
-    NSGraphicsContext.restoreGraphicsState()
-    guard let data = rep.representation(using: .png, properties: [:]) else {
-        throw NSError(domain: "DayLit", code: 2)
-    }
-    return data
-}
-
 func menuTemplate(pixels: Int) throws {
     let conf = NSImage.SymbolConfiguration(pointSize: CGFloat(pixels) * 0.82, weight: .semibold)
     let symbol = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: nil)!
@@ -57,6 +25,9 @@ func menuTemplate(pixels: Int) throws {
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
     NSGraphicsContext.current?.imageInterpolation = .high
+    NSColor.clear.setFill()
+    NSRect(x: 0, y: 0, width: pixels, height: pixels).fill()
+
     let tw = symbol.size.width
     let th = symbol.size.height
     let rect = NSRect(
@@ -71,16 +42,29 @@ func menuTemplate(pixels: Int) throws {
     for y in 0..<rep.pixelsHigh {
         for x in 0..<rep.pixelsWide {
             guard let c = rep.colorAt(x: x, y: y) else { continue }
-            rep.setColor(
-                NSColor(calibratedRed: 0, green: 0, blue: 0, alpha: c.alphaComponent),
-                atX: x,
-                y: y
-            )
+            let a = max(c.redComponent, c.greenComponent, c.blueComponent, c.alphaComponent)
+            rep.setColor(NSColor(calibratedRed: 0, green: 0, blue: 0, alpha: a), atX: x, y: y)
         }
     }
-    let name = pixels == 18 ? "MenuBarIcon.png" : "MenuBarIcon@2x.png"
+    let name = pixels <= 18 ? "MenuBarIcon.png" : "MenuBarIcon@2x.png"
     try rep.representation(using: .png, properties: [:])?
         .write(to: resources.appendingPathComponent(name))
+}
+
+func tintedSymbol(pointSize: CGFloat, color: NSColor) -> NSImage {
+    let conf = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .medium)
+    let symbol = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: nil)!
+        .withSymbolConfiguration(conf)!
+    let size = symbol.size
+    let image = NSImage(size: size)
+    image.lockFocus()
+    NSGraphicsContext.current?.imageInterpolation = .high
+    // Gold fill, then keep only symbol silhouette.
+    color.setFill()
+    NSRect(origin: .zero, size: size).fill()
+    symbol.draw(in: NSRect(origin: .zero, size: size), from: .zero, operation: .destinationIn, fraction: 1.0)
+    image.unlockFocus()
+    return image
 }
 
 func appIconPNG() throws {
@@ -102,6 +86,9 @@ func appIconPNG() throws {
     NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
     NSGraphicsContext.current?.imageInterpolation = .high
 
+    NSColor.clear.setFill()
+    NSRect(x: 0, y: 0, width: size, height: size).fill()
+
     let radius = CGFloat(size) * 0.2237
     let squircle = NSBezierPath(
         roundedRect: NSRect(x: 0, y: 0, width: size, height: size),
@@ -111,23 +98,17 @@ func appIconPNG() throws {
     NSColor(calibratedRed: 0.125, green: 0.125, blue: 0.133, alpha: 1).setFill()
     squircle.fill()
 
-    let conf = NSImage.SymbolConfiguration(pointSize: 470, weight: .medium)
-    let symbol = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: nil)!
-        .withSymbolConfiguration(conf)!
-    symbol.isTemplate = true
-
-    let tw = symbol.size.width
-    let th = symbol.size.height
+    let gold = NSColor(calibratedRed: 1.0, green: 0.78, blue: 0.30, alpha: 1)
+    let sun = tintedSymbol(pointSize: 470, color: gold)
+    let tw = sun.size.width
+    let th = sun.size.height
     let rect = NSRect(
         x: (CGFloat(size) - tw) / 2,
         y: (CGFloat(size) - th) / 2 - 6,
         width: tw,
         height: th
     )
-    let gold = NSColor(calibratedRed: 1.0, green: 0.78, blue: 0.30, alpha: 1)
-    gold.set()
-    symbol.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
-    rect.fill(using: .sourceAtop)
+    sun.draw(in: rect)
 
     NSGraphicsContext.restoreGraphicsState()
     try rep.representation(using: .png, properties: [:])?
