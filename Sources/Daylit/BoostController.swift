@@ -1,27 +1,63 @@
 import AppKit
 import Foundation
+import Combine
 
-final class BoostController {
+final class BoostController: ObservableObject {
     private let primer = EDRPrimer()
-    private let split = SplitOverlay()
     private let power = PowerMonitor()
     private var wakeObserver: NSObjectProtocol?
     private var screenObserver: NSObjectProtocol?
     private var watchdog: Timer?
 
-    var onStateChange: (() -> Void)?
-
     enum Mode: String {
         case off
-        case freeHalf
-        case full
+        case on
         case unsupported
         case waitingForAC
     }
 
-    private(set) var mode: Mode = .off
+    @Published private(set) var mode: Mode = .off
+    @Published var enabled: Bool = Settings.enabled {
+        didSet {
+            Settings.enabled = enabled
+            reconcile()
+        }
+    }
+    @Published var boostCeiling: Float = Settings.boostCeiling {
+        didSet {
+            Settings.boostCeiling = boostCeiling
+            reconcile()
+        }
+    }
+    @Published var acOnly: Bool = Settings.acOnly {
+        didSet {
+            Settings.acOnly = acOnly
+            reconcile()
+        }
+    }
+    @Published var launchAtLogin: Bool = LaunchAtLogin.isEnabled {
+        didSet {
+            _ = LaunchAtLogin.setEnabled(launchAtLogin)
+            launchAtLogin = LaunchAtLogin.isEnabled
+        }
+    }
+
+    var statusText: String {
+        switch mode {
+        case .off: return "Off"
+        case .on: return "Boosting"
+        case .unsupported: return "This display has no XDR headroom"
+        case .waitingForAC: return "Waiting for power adapter"
+        }
+    }
 
     func start() {
+        LaunchAtLogin.syncFromSystem()
+        launchAtLogin = LaunchAtLogin.isEnabled
+        enabled = Settings.enabled
+        boostCeiling = Settings.boostCeiling
+        acOnly = Settings.acOnly
+
         power.onChange = { [weak self] in self?.reconcile() }
         power.start()
 
@@ -64,53 +100,38 @@ final class BoostController {
     }
 
     func reconcile(forceRefresh: Bool = false) {
-        defer { onStateChange?() }
-
         guard DisplaySupport.hasSupportedDisplay else {
             applyOff()
             mode = .unsupported
             return
         }
 
-        guard Settings.enabled else {
+        guard enabled else {
             applyOff()
             mode = .off
             return
         }
 
-        if Settings.acOnly && !power.isOnACPower {
+        if acOnly && !power.isOnACPower {
             applyOff()
             mode = .waitingForAC
             return
         }
 
         let screens = DisplaySupport.builtInEDRScreens
-        let ceiling = Settings.boostCeiling
-
-        if Settings.isLicensed {
-            split.hide()
-            primer.enable(for: screens)
-            for screen in screens {
-                if let id = DisplaySupport.displayID(for: screen) {
-                    GammaBoost.apply(displayID: id, ceiling: ceiling)
-                }
+        primer.enable(for: screens)
+        for screen in screens {
+            if let id = DisplaySupport.displayID(for: screen) {
+                GammaBoost.apply(displayID: id, ceiling: boostCeiling)
             }
-            if forceRefresh {
-                primer.refreshAll()
-            }
-            mode = .full
-        } else {
-            GammaBoost.restore()
-            primer.disable()
-            if let screen = screens.first {
-                split.show(on: screen, factor: ceiling, side: Settings.freeHalfSide)
-            }
-            mode = .freeHalf
         }
+        if forceRefresh {
+            primer.refreshAll()
+        }
+        mode = .on
     }
 
     private func applyOff() {
-        split.hide()
         primer.disable()
         GammaBoost.restore()
     }

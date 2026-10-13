@@ -7,7 +7,7 @@ app: build
 	bash scripts/package-app.sh
 
 run: app
-	open .build/Daylit.app
+	open ".build/Day.Lit.app"
 
 clean:
 	rm -rf .build

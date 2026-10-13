@@ -8,3 +8,5 @@
 | F04 sleep/wake | 2026-10-13 | partial | didWake + screen params + 5s reconcile |
 | Monetization | 2026-10-13 | partial | Local key only |
 | Release .app | 2026-10-13 | done | `make app` → `.build/Daylit.app` |
+
+| Brand Day.Lit | 2026-10-13 | done | Free full unlock, Dock app, slider UI |
