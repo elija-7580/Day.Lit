@@ -1,6 +1,6 @@
 # Day.Lit
 
-Ultra-light macOS app that unlocks Liquid Retina XDR / Pro Display XDR brightness for everyday work. Free forever.
+A lightweight macOS app that adds brightness headroom on supported XDR displays.
 
 [github.com/elija-7580/Day.Lit](https://github.com/elija-7580/Day.Lit)
 
@@ -26,14 +26,14 @@ open ".build/Day.Lit.app"
 
 Unsigned builds may need **System Settings → Privacy & Security → Open Anyway** once.
 
-## Usage
+## Features
 
-Day.Lit lives in the **menu bar**. Click the sun to open the panel. Closing the panel does not quit. The Dock icon is optional in panel settings.
+- Adjust boost intensity with the slider (1.0×–2.0×)
+- Optional power-adapter-only mode and launch at login
+- Menu bar control, with an optional Dock icon
+- Closing the panel leaves Day.Lit running
 
-- Runs from the menu bar; the Dock icon is optional
-- Drag the **Brightness** slider (1.0×–2.0×)
-- Optional: only on power adapter, open at login
-- Click the menu bar sun to open or close the panel
+Click the sun icon in the menu bar to open or close the control panel.
 
 ## Low-resource design
 
@@ -41,4 +41,4 @@ Day.Lit lives in the **menu bar**. Click the sun to open the panel. Closing the 
 
 ## License
 
-MIT.
+Released under the [MIT License](LICENSE).

@@ -122,9 +122,6 @@ struct ContentView: View {
 
     private var footer: some View {
         HStack {
-            Text("Menu bar · free")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.tertiary)
             Spacer()
             Button("Quit") {
                 boost.stop()
