@@ -32,14 +32,21 @@ final class MenuBarController: NSObject {
     }
 
     private static func menuIcon() -> NSImage {
+        // Prefer system SF Symbol so menu bar always matches macOS rendering.
+        if let image = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: "Day.Lit") {
+            let configured = image.withSymbolConfiguration(
+                .init(pointSize: 14, weight: .medium)
+            ) ?? image
+            configured.isTemplate = true
+            return configured
+        }
         if let url = Bundle.main.url(forResource: "MenuBarIcon", withExtension: "png"),
            let image = NSImage(contentsOf: url) {
             image.isTemplate = true
             image.size = NSSize(width: 18, height: 18)
             return image
         }
-        return NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: "Day.Lit")
-            ?? NSImage()
+        return NSImage()
     }
 
     private func updateTooltip() {

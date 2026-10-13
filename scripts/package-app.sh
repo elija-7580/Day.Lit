@@ -14,12 +14,16 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
   <key>CFBundleExecutable</key>
   <string>Day.Lit</string>
   <key>CFBundleIdentifier</key>
   <string>app.daylit.mac</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
   <key>CFBundleName</key>
-  <string>Day.Lit</string>
+  <string>DayLit</string>
   <key>CFBundleDisplayName</key>
   <string>Day.Lit</string>
   <key>CFBundleIconFile</key>
@@ -27,9 +31,11 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>0.2.0</string>
+  <string>0.2.1</string>
   <key>CFBundleVersion</key>
-  <string>3</string>
+  <string>4</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.utilities</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>LSUIElement</key>
@@ -38,6 +44,10 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <true/>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
+  <key>NSSupportsAutomaticTermination</key>
+  <false/>
+  <key>NSSupportsSuddenTermination</key>
+  <false/>
 </dict>
 </plist>
 PLIST
@@ -46,10 +56,19 @@ cp "$BIN" "$APP/Contents/MacOS/Day.Lit"
 chmod +x "$APP/Contents/MacOS/Day.Lit"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp "$ROOT/Resources/MenuBarIcon.png" "$APP/Contents/Resources/MenuBarIcon.png"
-if [[ -f "$ROOT/Resources/MenuBarIcon@2x.png" ]]; then
-  cp "$ROOT/Resources/MenuBarIcon@2x.png" "$APP/Contents/Resources/MenuBarIcon@2x.png"
-fi
+cp "$ROOT/Resources/MenuBarIcon@2x.png" "$APP/Contents/Resources/MenuBarIcon@2x.png"
 
-# Clear icon cache hint for local testing
-touch "$APP"
+# Ad-hoc sign so Launch Services / Gatekeeper accept local open
+codesign --force --deep --sign - "$APP"
+# Install into Applications for a stable path
+rm -rf "/Applications/Day.Lit.app"
+cp -R "$APP" "/Applications/Day.Lit.app"
+codesign --force --deep --sign - "/Applications/Day.Lit.app"
+xattr -c "/Applications/Day.Lit.app" || true
+
+# Refresh icon cache for this bundle
+touch "/Applications/Day.Lit.app"
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/Day.Lit.app" || true
+
 echo "Built $APP"
+echo "Installed /Applications/Day.Lit.app"
