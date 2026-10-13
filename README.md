@@ -30,10 +30,10 @@ Unsigned builds may need **System Settings → Privacy & Security → Open Anywa
 
 Day.Lit lives in the **menu bar**. Click the sun to open the panel. Closing the panel does not quit. The Dock icon is optional in panel settings.
 
-- Opens as a normal app with Dock icon and a small Day.Lit window
+- Runs from the menu bar; the Dock icon is optional
 - Drag the **Brightness** slider (1.0×–2.0×)
 - Optional: only on power adapter, open at login
-- Menu bar sun: click to open, right-click for quick controls
+- Click the menu bar sun to open or close the panel
 
 ## Low-resource design
 
