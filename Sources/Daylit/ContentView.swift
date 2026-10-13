@@ -14,12 +14,9 @@ struct ContentView: View {
         .padding(.horizontal, 18)
         .padding(.top, 18)
         .padding(.bottom, 14)
-        .frame(width: 320, height: 400)
-        .background {
-            RoundedRectangle(cornerRadius: 0)
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
-        }
+        .frame(width: 320, height: 368)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private var header: some View {
@@ -105,7 +102,7 @@ struct ContentView: View {
                     .controlSize(.small)
                 }
                 Divider().padding(.leading, 12)
-                settingsRow(title: "Show in Dock", subtitle: "Like Scratchpad") {
+                settingsRow(title: "Show in Dock", subtitle: "Keep Day.Lit in the Dock") {
                     Toggle(
                         "",
                         isOn: Binding(

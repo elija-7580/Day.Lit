@@ -27,7 +27,7 @@ enum Settings {
         set { defaults.set(newValue, forKey: "launchAtLogin") }
     }
 
-    /// Scratchpad-style: menu bar by default; Dock optional.
+    /// Menu bar by default; Dock icon is optional.
     static var showDockIcon: Bool {
         get { defaults.object(forKey: "showDockIcon") as? Bool ?? false }
         set { defaults.set(newValue, forKey: "showDockIcon") }

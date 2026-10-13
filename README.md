@@ -28,7 +28,7 @@ Unsigned builds may need **System Settings → Privacy & Security → Open Anywa
 
 ## Usage
 
-Scratchpad-style: lives in the **menu bar**. Click the sun to open the panel. Closing the panel does not quit. Optional Dock icon in the panel settings.
+Day.Lit lives in the **menu bar**. Click the sun to open the panel. Closing the panel does not quit. The Dock icon is optional in panel settings.
 
 - Opens as a normal app with Dock icon and a small Day.Lit window
 - Drag the **Brightness** slider (1.0×–2.0×)

@@ -1,7 +1,12 @@
 import AppKit
 import SwiftUI
 
-/// Floating panel anchored under the menu bar icon (Scratchpad-style).
+/// Borderless popover anchored below the menu bar item.
+private final class DaylitPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
 final class PanelController: NSWindowController, NSWindowDelegate {
     private let boost: BoostController
 
@@ -13,25 +18,23 @@ final class PanelController: NSWindowController, NSWindowDelegate {
         self.boost = boost
 
         let hosting = NSHostingController(rootView: ContentView(boost: boost))
-        let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 400),
-            styleMask: [.titled, .closable, .fullSizeContentView, .nonactivatingPanel],
+        let panel = DaylitPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 368),
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
-        panel.title = "Day.Lit"
-        panel.titleVisibility = .hidden
-        panel.titlebarAppearsTransparent = true
         panel.isFloatingPanel = true
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         panel.isReleasedWhenClosed = false
-        panel.hidesOnDeactivate = false
-        panel.isMovableByWindowBackground = true
+        panel.hidesOnDeactivate = true
+        panel.isMovableByWindowBackground = false
         panel.backgroundColor = .clear
+        panel.isOpaque = false
         panel.hasShadow = true
         panel.contentViewController = hosting
-        panel.setContentSize(NSSize(width: 320, height: 400))
+        panel.setContentSize(NSSize(width: 320, height: 368))
 
         super.init(window: panel)
         panel.delegate = self
@@ -51,8 +54,8 @@ final class PanelController: NSWindowController, NSWindowDelegate {
     func show(relativeTo statusButton: NSStatusBarButton?) {
         guard let panel = window else { return }
         position(panel, relativeTo: statusButton)
-        panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
     }
 
     func hide() {

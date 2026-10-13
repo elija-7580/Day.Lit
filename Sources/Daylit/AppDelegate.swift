@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.applyActivationPolicy()
         }
         controller.start()
-        // Stay in menu bar until the user clicks the sun (Scratchpad-style).
+        // Stay in the menu bar until the user opens the panel.
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
