@@ -1,0 +1,17 @@
+feature,area,priority,original,clone,notes
+Unlock XDR headroom system-wide,boost,must,yes,yes,Licensed full mode via gamma+EDR primer
+Free half-screen trial forever,trial,must,yes,yes,Left-half multiply overlay at 2 Hz
+Menu bar control,ui,must,yes,yes,
+Boost intensity control,boost,must,yes,yes,Slider 1.0–2.0×
+Same system brightness keys still work,boost,must,yes,yes,Does not replace F1/F2
+Survive sleep / lid / lock,reliability,must,yes,partial,Wake + display + 5s watchdog; needs real lid test
+Very low idle CPU/GPU,perf,must,partial,yes,Full mode: one present + 30s keepalive; free: 2 Hz
+AC-only option,battery,should,yes,yes,
+Unsupported display message,ui,must,yes,yes,Status line in menu
+One-time license (no subscription),monetization,must,yes,partial,Local DAYLIT- key; Stripe not wired
+Team / company tiers,monetization,could,yes,no,Defer
+Mac App Store build,distribution,could,yes,no,Direct download first
+Launch at login,ui,should,no,no,System Settings Login Items is enough for MVP
+Exclude current app,boost,could,yes,no,Defer
+Nit readout,ui,could,no,no,
+Landing page like MacBrightness,marketing,should,yes,no,After app works
