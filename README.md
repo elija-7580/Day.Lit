@@ -2,6 +2,10 @@
 
 A lightweight macOS app that adds brightness headroom on supported XDR displays.
 
+<p align="center">
+  <img src="docs/screenshots/daylit-panel.png" width="320" alt="Day.Lit control panel with brightness slider and settings" />
+</p>
+
 [github.com/elija-7580/Day.Lit](https://github.com/elija-7580/Day.Lit)
 
 ## Requirements
