@@ -42,29 +42,13 @@ func menuTemplate(pixels: Int) throws {
     for y in 0..<rep.pixelsHigh {
         for x in 0..<rep.pixelsWide {
             guard let c = rep.colorAt(x: x, y: y) else { continue }
-            let a = max(c.redComponent, c.greenComponent, c.blueComponent, c.alphaComponent)
+            let a = max(c.redComponent, c.greenComponent, c.blueComponent) * c.alphaComponent
             rep.setColor(NSColor(calibratedRed: 0, green: 0, blue: 0, alpha: a), atX: x, y: y)
         }
     }
     let name = pixels <= 18 ? "MenuBarIcon.png" : "MenuBarIcon@2x.png"
     try rep.representation(using: .png, properties: [:])?
         .write(to: resources.appendingPathComponent(name))
-}
-
-func tintedSymbol(pointSize: CGFloat, color: NSColor) -> NSImage {
-    let conf = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .medium)
-    let symbol = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: nil)!
-        .withSymbolConfiguration(conf)!
-    let size = symbol.size
-    let image = NSImage(size: size)
-    image.lockFocus()
-    NSGraphicsContext.current?.imageInterpolation = .high
-    // Gold fill, then keep only symbol silhouette.
-    color.setFill()
-    NSRect(origin: .zero, size: size).fill()
-    symbol.draw(in: NSRect(origin: .zero, size: size), from: .zero, operation: .destinationIn, fraction: 1.0)
-    image.unlockFocus()
-    return image
 }
 
 func appIconPNG() throws {
@@ -89,6 +73,7 @@ func appIconPNG() throws {
     NSColor.clear.setFill()
     NSRect(x: 0, y: 0, width: size, height: size).fill()
 
+    // Full-bleed squircle fill (transparent outside = correct .icns format)
     let radius = CGFloat(size) * 0.2237
     let squircle = NSBezierPath(
         roundedRect: NSRect(x: 0, y: 0, width: size, height: size),
@@ -99,7 +84,11 @@ func appIconPNG() throws {
     squircle.fill()
 
     let gold = NSColor(calibratedRed: 1.0, green: 0.78, blue: 0.30, alpha: 1)
-    let sun = tintedSymbol(pointSize: 470, color: gold)
+    let conf = NSImage.SymbolConfiguration(pointSize: 470, weight: .medium)
+        .applying(NSImage.SymbolConfiguration(paletteColors: [gold]))
+    let sun = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: nil)!
+        .withSymbolConfiguration(conf)!
+
     let tw = sun.size.width
     let th = sun.size.height
     let rect = NSRect(
