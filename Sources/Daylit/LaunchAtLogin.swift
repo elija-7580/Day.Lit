@@ -8,15 +8,22 @@ enum LaunchAtLogin {
 
     @discardableResult
     static func setEnabled(_ enabled: Bool) -> Bool {
+        // No-op if already in the requested state.
+        if enabled == isEnabled {
+            Settings.launchAtLogin = enabled
+            return true
+        }
+
         do {
             if enabled {
                 try SMAppService.mainApp.register()
             } else {
                 try SMAppService.mainApp.unregister()
             }
-            Settings.launchAtLogin = enabled
+            Settings.launchAtLogin = isEnabled
             return true
         } catch {
+            Settings.launchAtLogin = isEnabled
             return false
         }
     }

@@ -86,9 +86,15 @@ struct ContentView: View {
                 }
                 Divider().padding(.leading, 14)
                 settingsRow(title: "Open at login", subtitle: "Start with your Mac") {
-                    Toggle("", isOn: $boost.launchAtLogin)
-                        .labelsHidden()
-                        .toggleStyle(.switch)
+                    Toggle(
+                        "",
+                        isOn: Binding(
+                            get: { boost.launchAtLogin },
+                            set: { boost.setLaunchAtLogin($0) }
+                        )
+                    )
+                    .labelsHidden()
+                    .toggleStyle(.switch)
                 }
             }
             .background(cardBackground)

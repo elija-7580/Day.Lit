@@ -35,10 +35,20 @@ final class BoostController: ObservableObject {
             reconcile()
         }
     }
-    @Published var launchAtLogin: Bool = LaunchAtLogin.isEnabled {
-        didSet {
-            _ = LaunchAtLogin.setEnabled(launchAtLogin)
-            launchAtLogin = LaunchAtLogin.isEnabled
+    /// UI state only. Use `setLaunchAtLogin(_:)` to change the login item.
+    @Published var launchAtLogin: Bool = false
+
+    private var isApplyingLaunchAtLogin = false
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        guard !isApplyingLaunchAtLogin else { return }
+        isApplyingLaunchAtLogin = true
+        defer { isApplyingLaunchAtLogin = false }
+
+        _ = LaunchAtLogin.setEnabled(enabled)
+        let actual = LaunchAtLogin.isEnabled
+        if launchAtLogin != actual {
+            launchAtLogin = actual
         }
     }
 
@@ -52,6 +62,7 @@ final class BoostController: ObservableObject {
     }
 
     func start() {
+        // Read-only sync — do not call setEnabled on launch.
         LaunchAtLogin.syncFromSystem()
         launchAtLogin = LaunchAtLogin.isEnabled
         enabled = Settings.enabled
