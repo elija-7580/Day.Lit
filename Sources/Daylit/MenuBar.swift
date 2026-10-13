@@ -4,12 +4,12 @@ import Combine
 final class MenuBarController: NSObject {
     private let statusItem: NSStatusItem
     private let boost: BoostController
-    private weak var mainWindow: MainWindowController?
+    private let panel: PanelController
     private var cancellables = Set<AnyCancellable>()
 
-    init(boost: BoostController, mainWindow: MainWindowController) {
+    init(boost: BoostController, panel: PanelController) {
         self.boost = boost
-        self.mainWindow = mainWindow
+        self.panel = panel
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
 
@@ -32,19 +32,12 @@ final class MenuBarController: NSObject {
     }
 
     private static func menuIcon() -> NSImage {
-        // Prefer system SF Symbol so menu bar always matches macOS rendering.
         if let image = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: "Day.Lit") {
             let configured = image.withSymbolConfiguration(
                 .init(pointSize: 14, weight: .medium)
             ) ?? image
             configured.isTemplate = true
             return configured
-        }
-        if let url = Bundle.main.url(forResource: "MenuBarIcon", withExtension: "png"),
-           let image = NSImage(contentsOf: url) {
-            image.isTemplate = true
-            image.size = NSSize(width: 18, height: 18)
-            return image
         }
         return NSImage()
     }
@@ -53,19 +46,24 @@ final class MenuBarController: NSObject {
         statusItem.button?.toolTip = "Day.Lit — \(boost.statusText)"
     }
 
+    func showPanel() {
+        panel.show(relativeTo: statusItem.button)
+    }
+
     @objc private func statusClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else {
-            openApp()
+            panel.toggle(relativeTo: statusItem.button)
             return
         }
-        if event.type == .rightMouseUp {
+
+        if event.type == .rightMouseUp || event.modifierFlags.contains(.control) {
             statusItem.menu = buildMenu()
             statusItem.button?.performClick(nil)
             DispatchQueue.main.async { [weak self] in
                 self?.statusItem.menu = nil
             }
         } else {
-            openApp()
+            panel.toggle(relativeTo: statusItem.button)
         }
     }
 
@@ -78,6 +76,14 @@ final class MenuBarController: NSObject {
         menu.addItem(status)
         menu.addItem(.separator())
 
+        let open = NSMenuItem(
+            title: panel.isVisible ? "Hide Day.Lit" : "Open Day.Lit",
+            action: #selector(togglePanel),
+            keyEquivalent: "o"
+        )
+        open.target = self
+        menu.addItem(open)
+
         let enabled = NSMenuItem(
             title: boost.enabled ? "Boost On" : "Boost Off",
             action: #selector(toggleEnabled),
@@ -87,42 +93,19 @@ final class MenuBarController: NSObject {
         enabled.state = boost.enabled ? .on : .off
         menu.addItem(enabled)
 
-        let sliderItem = NSMenuItem()
-        let slider = NSSlider(
-            value: Double(boost.boostCeiling),
-            minValue: 1.0,
-            maxValue: 2.0,
-            target: self,
-            action: #selector(sliderChanged(_:))
-        )
-        slider.isContinuous = true
-        slider.frame = NSRect(x: 14, y: 6, width: 200, height: 28)
-        let wrap = NSView(frame: NSRect(x: 0, y: 0, width: 228, height: 40))
-        wrap.addSubview(slider)
-        sliderItem.view = wrap
-        menu.addItem(sliderItem)
-
         menu.addItem(.separator())
-        let open = NSMenuItem(title: "Open Day.Lit", action: #selector(openApp), keyEquivalent: "o")
-        open.target = self
-        menu.addItem(open)
-
         let quit = NSMenuItem(title: "Quit Day.Lit", action: #selector(quit), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
         return menu
     }
 
+    @objc private func togglePanel() {
+        panel.toggle(relativeTo: statusItem.button)
+    }
+
     @objc private func toggleEnabled() {
         boost.enabled.toggle()
-    }
-
-    @objc private func sliderChanged(_ sender: NSSlider) {
-        boost.boostCeiling = Float(sender.doubleValue)
-    }
-
-    @objc private func openApp() {
-        mainWindow?.show()
     }
 
     @objc private func quit() {

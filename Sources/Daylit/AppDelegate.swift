@@ -2,24 +2,26 @@ import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var boost: BoostController!
-    private var mainWindow: MainWindowController!
+    private var panel: PanelController!
     private var menuBar: MenuBarController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.regular)
+        applyActivationPolicy()
 
         let controller = BoostController()
         boost = controller
-        mainWindow = MainWindowController(boost: controller)
-        menuBar = MenuBarController(boost: controller, mainWindow: mainWindow)
+        panel = PanelController(boost: controller)
+        menuBar = MenuBarController(boost: controller, panel: panel)
+        controller.onDockIconChange = { [weak self] in
+            self?.applyActivationPolicy()
+        }
         controller.start()
-        mainWindow.show()
+        // Stay in menu bar until the user clicks the sun (Scratchpad-style).
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag {
-            mainWindow.show()
-        }
+        // Dock click / Finder reopen → show panel.
+        menuBar?.showPanel()
         return true
     }
 
@@ -29,5 +31,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         boost?.stop()
+    }
+
+    private func applyActivationPolicy() {
+        NSApp.setActivationPolicy(Settings.showDockIcon ? .regular : .accessory)
     }
 }

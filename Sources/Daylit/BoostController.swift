@@ -37,6 +37,9 @@ final class BoostController: ObservableObject {
     }
     /// UI state only. Use `setLaunchAtLogin(_:)` to change the login item.
     @Published var launchAtLogin: Bool = false
+    @Published var showDockIcon: Bool = Settings.showDockIcon
+
+    var onDockIconChange: (() -> Void)?
 
     private var isApplyingLaunchAtLogin = false
 
@@ -52,6 +55,12 @@ final class BoostController: ObservableObject {
         }
     }
 
+    func setShowDockIcon(_ enabled: Bool) {
+        Settings.showDockIcon = enabled
+        showDockIcon = enabled
+        onDockIconChange?()
+    }
+
     var statusText: String {
         switch mode {
         case .off: return "Off"
@@ -65,6 +74,7 @@ final class BoostController: ObservableObject {
         // Read-only sync — do not call setEnabled on launch.
         LaunchAtLogin.syncFromSystem()
         launchAtLogin = LaunchAtLogin.isEnabled
+        showDockIcon = Settings.showDockIcon
         enabled = Settings.enabled
         boostCeiling = Settings.boostCeiling
         acOnly = Settings.acOnly
